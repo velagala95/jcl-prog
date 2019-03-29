@@ -1,0 +1,311 @@
+COPY MEMBERS PROGRAM:
+
+//CAPGC38A   JOB  NOTIFY=CAPGC38                                        
+//STEP1      EXEC PGM=IEBCOPY                                           
+//SYSPRINT   DD   SYSOUT=*                                              
+//A          DD   DSN=CAPGC38.TEJA.IN,DISP=SHR                          
+//B          DD   DSN=CAPGC38.TEJA.OUT,DISP=SHR                         
+//SYSIN      DD   *                                                     
+            COPY OUTDD=B,INDD=A                                                   
+/*
+//                                                                      
+
+
+
+
+
+
+INSTREAM DATA:
+
+//CAPGC38V JOB MT682,TEJA,NOTIFY=CAPGC38,MSGLEVEL=(0,0)         
+//COBRUN  EXEC PGM=IEBGENER
+//SYSUT1 DD *              
+ HELLO                      
+ MAINFRAME                  
+//SYSUT2 DD SYSOUT=*       
+//SYSPRINT  DD SYSOUT=*    
+//SYSIN     DD DUMMY  
+/*
+//
+
+
+
+
+
+
+
+
+USING IEFBR14, TO CREAT NEW PS OR PDS:
+
+//CAPGC38A  JOB  NOTIFY=&SYSUID                  
+//STEP1     EXEC PGM=IEFBR14                     
+//XYZ       DD   DSN=CAPGC38.TEJA.NEWPS,         
+// DISP=(NEW,CATLG),SPACE=(TRK,(2,1)),           
+// DCB=(LRECL=80,RECFM=FB,BLKSIZE=800),UNIT=SYSDA
+/*
+//
+
+
+
+
+
+USING IEBGENER, TO COPY FILES:
+
+//CAPGC38A JOB  NOTIFY=&SYSUID                           
+//S1       EXEC PGM=IEBGENER                             
+//SYSUT1   DD   DSN=CAPGC38.SSS.SSS,                     
+//  DISP=(OLD)                                           
+//SYSUT2   DD   DSN=CAPGC38.OUTPUT.FILE,DISP=(NEW,CATLG),
+//  SPACE=(TRK,(1,1)),UNIT=SYSDA,                        
+//  DCB=(LRECL=80,RECFM=FB,BLKSIZE=800)                  
+//SYSPRINT DD   SYSOUT=*                                 
+//SYSIN    DD   DUMMY                                    
+/*
+//   
+
+
+
+
+
+
+
+TO COPY THE FILE IN A DUMMY FILE AND PRINT THE OUTPUT IN THE SPOOL:
+
+//CAPGC38A JOB  NOTIFY=&SYSUID                  
+//STEP1    EXEC PGM=IEBGENER                    
+//SYSUT1   DD   *                               
+ HINDU                                          
+ MUSLIM                                         
+//SYSUT2   DD   DSN=&&SREE,DISP=(NEW,PASS),     
+//   UNIT=SYSDA                                 
+//SYSPRINT DD   SYSOUT=*                        
+//SYSIN    DD   DUMMY                           
+//**********************************************
+//STEP2    EXEC PGM=IEBGENER                    
+//SYSPRINT DD   SYSOUT=*                        
+//SYSUT1   DD   DSN=&&SREE,DISP=(OLD)           
+//SYSUT2   DD   SYSOUT=*                        
+//SYSIN    DD   DUMMY
+/*
+//   
+
+
+
+
+
+
+TO CREATE A NEW PDS, TO INSTREAM THE MEMBER, TO PRINT THE OUTPUT IN THE SPOOL BY DELETE THE MEMBER
+
+//CAPGC38A    JOB   NOTIFY=&SYSUID                                
+//STEP1       EXEC  PGM=IEFBR14                                   
+//D1          DD    DSN=CAPGC38.TEJA.TEJ(M2),DISP=(NEW,CATLG),    
+//         SPACE=(TRK,(1,1,1)),UNIT=SYSDA                         
+//*******************************************************         
+//STEP2       EXEC  PGM=IEBGENER                                  
+//SYSUT1      DD    *                                             
+  NARESH                                                        
+  KULLESH                                                         
+//SYSUT2      DD   DSN=CAPGC38.TEJA.TEJ(M2),DISP=(OLD),UNIT=SYSDA 
+//SYSPRINT    DD   SYSOUT=*                                       
+//SYSIN       DD   DUMMY                                          
+//******************************************************\         
+//STEP3      EXEC  PGM=IEBGENER                                   
+//SYSUT1     DD    DSN=CAPGC38.TEJA.TEJ(M2),DISP=(OLD,DELETE),    
+//    UNIT=SYSDA                                                  
+//SYSUT2     DD    SYSOUT=*  
+//SYSPRINT   DD    SYSOUT=*
+//SYSIN      DD    DUMMY   
+/*
+//       
+
+
+
+
+
+
+
+WRITE A PROCEDURE TO COPY INSTREAM DATA TO SPOOL(HINT:OVERRIDE IS REQUIRED)    
+PROCEDURE PROGRAM:
+//STEP1         EXEC PGM=IEBGENER                        
+//SYSUT1     DD     DUMMY                               
+//SYSUT2     DD     SYSOUT=*
+//SYSPRINT DD     SYSOUT=*                           
+//SYSIN        DD     DUMMY   
+JCL PROGRAM:
+//CAPGC38A       JOB       NOTIFY=&SYSUID          
+//ZZZ            JCLLIB    ORDER=CAPGC38.TEJA.PROC1
+//P1             EXEC      PROC=MEM                
+//STEP1.SYSUT1   DD        * 
+‘give the data’
+
+
+
+
+
+
+
+
+WRITE A PROGRAM TO COPY THE INFO FROM A PS FILE TO A NEWS PDS AND THEN THE MEM MUST ME COPIED TO A NEW PDS AND THE OLD ONE MUST BE DELETED.
+PROCEDURE PROGRAM:
+//STEP1    EXEC PGM=IEBGENER                                    
+//SYSUT1   DD   DSN=CAPGC38.TEJA.PS,                            
+//  DISP=(OLD)                                                  
+//SYSUT2   DD   DSN=CAPGC38.OUTPUT.FILE1(MEM1),DISP=(NEW,CATLG),
+//  SPACE=(TRK,(1,1,1)),UNIT=SYSDA,                             
+//  DCB=(LRECL=80,RECFM=FB,BLKSIZE=800)                         
+//SYSPRINT DD   SYSOUT=*                                        
+//SYSIN    DD   DUMMY                                           
+//STEP2     EXEC PGM=IEBCOPY                                    
+//SYSPRINT   DD   SYSOUT=*                                      
+//A          DD   DSN=CAPGC38.OUTPUT.FILE1,DISP=(SHR,DELETE)    
+//B          DD   DSN=CAPGC38.OUTPUT.FILE2,DISP=(SHR,CATLG),    
+//   SPACE=(TRK,(1,1,1)),UNIT=SYSDA,                            
+//   DCB=(LRECL=80,RECFM=FB,BLKSIZE=800)                        
+//SYSIN      DD   DUMMY    
+JCL PROGRAM:
+//CAPGC38A   JOB NOTIFY=&SYSUID             
+//           JCLLIB ORDER=CAPGC38.TEJA.PROC1
+//P1         EXEC  PROC=M2                  
+//STEP2.SYSIN   DD *                        
+    COPY OUTDD=B,INDD=A                     
+/*                                          
+//      
+
+
+
+
+
+WRITE A PROGRAM THE EDIT THE DATA AND PRINT USING PROCEDURES:
+
+PROCEDURE STEP:
+//STEP1      EXEC   PGM=IEBGENER                          
+//SYSUT1     DD     DUMMY                                 
+//SYSUT2     DD     DSN=CAPGC38.TEJA.PS1,DISP=(NEW,CATLG),
+//   SPACE=(TRK,(1,1)),UNIT=SYSDA                         
+//SYSPRINT   DD     SYSOUT=*                              
+//SYSIN      DD     DUMMY                                 
+//STEP2      EXEC   PGM=IEBGENER                          
+//SYSUT1     DD     DSN=CAPGC38.TEJA.PS1,DISP=(OLD)       
+//SYSUT2     DD     SYSOUT=*                              
+//SYSPRINT   DD     SYSOUT=*                              
+//SYSIN      DD     DUMMY                                 
+JCL PROGRAM:
+	
+//CAPGC38A       JOB       NOTIFY=&SYSUID                
+//ZZZ            JCLLIB    ORDER=CAPGC38.TEJA.PROC1      
+//P1             EXEC      PROC=M3                       
+//STEP1.SYSUT1   DD  *                                   
+001  XYZ  D1                                             
+003  PQR  D2                                             
+004  ABC  D3                                             
+005  AZC  D1                                             
+//STEP2.SYSIN    DD  *                                   
+  GENERATE MAXFLDS=3,MAXLITS=4                           
+  RECORD FIELD=(2,11,,1),FIELD=(2,'**',,3),FIELD=(3,1,,5)
+/*                                                       
+//                                                       
+
+
+
+
+
+
+SORTING PROGRAMS
+
+
+
+
+
+WRITE A SORT PROGRAM TO SORT OUT SINGLE FIELD:
+
+//CAPGC38A  JOB   NOTIFY=&SYSUID                   
+//STEP1     EXEC  PGM=SORT                         
+//SORTIN    DD    DSN=CAPGC38.TEJA.SORTPS1,DISP=OLD
+//SORTOUT   DD    DSN=CAPGC38.TEJA.SORTPS2,DISP=OLD
+//SYSOUT    DD    SYSOUT=*                         
+//SYSIN     DD *                                   
+    SORT FIELDS=(9,3,CH,A)  
+
+
+
+
+
+WRITE A CODE TO SORT OUT 2 FIELDS:                        
+
+//CAPGC38A  JOB   NOTIFY=&SYSUID                   
+//STEP1     EXEC  PGM=SORT                         
+//SORTIN    DD    DSN=CAPGC38.TEJA.SORTPS1,DISP=OLD
+//SORTOUT   DD    DSN=CAPGC38.TEJA.SORTPS2,DISP=OLD
+//SYSOUT    DD    SYSOUT=*                         
+//SYSIN     DD *                                   
+   SORT FIELDS=(9,3,CH,A,14,2,CH,D)     
+
+
+
+
+
+
+
+
+WRITE A CODE TO SORT THE FILE WITH A CONDITION(CHARACTERS):
+
+//CAPGC38A  JOB   NOTIFY=&SYSUID                   
+//STEP1     EXEC  PGM=SORT                         
+//SORTIN    DD    DSN=CAPGC38.TEJA.SORTPS1,DISP=OLD
+//SORTOUT   DD    DSN=CAPGC38.TEJA.SORTPS2,DISP=OLD
+//SYSOUT    DD    SYSOUT=*                         
+//SYSIN     DD *                                   
+    INCLUDE COND=(15,2,CH,EQ,C'D2')
+     SORT FIELDS=(1,3,CH,A)   
+
+
+
+
+
+
+
+WRITE A CODE TO SORT THE FILE WITH A CONDITIION(NUMBERS):      
+     
+//CAPGC38A  JOB   NOTIFY=&SYSUID                    
+//STEP1     EXEC  PGM=SORT                          
+//SORTIN    DD    DSN=CAPGC38.TEJA.SORTPS1,DISP=OLD 
+//SORTOUT   DD    DSN=CAPGC38.TEJA.SORTPS2,DISP=OLD 
+//SYSOUT    DD    SYSOUT=*                          
+//SYSIN     DD *                                    
+   INCLUDE COND=(15,2,FS,EQ,NUM)                     
+    SORT FIELDS=(1,3,CH,A)                                 
+
+
+
+
+
+
+
+WRITE A CODE TO SORT OUT THE FILE AND ELIMINATE THE DUPLICATE FILES:
+
+//CAPGC38A  JOB   NOTIFY=&SYSUID                   
+//STEP1     EXEC  PGM=SORT                         
+//SORTIN    DD    DSN=CAPGC38.TEJA.SORTPS1,DISP=OLD
+//SORTOUT   DD    DSN=CAPGC38.TEJA.SORTPS2,DISP=OLD
+//SYSOUT    DD    SYSOUT=*                         
+//SYSIN     DD *                                   
+  SUM FIELDS=NONE                                  
+   SORT FIELDS=(1,3,CH,A)       
+
+WRITE A CODE FOR OMIT CONDITION:
+//CAPGC38A  JOB   NOTIFY=&SYSUID                   
+//STEP1     EXEC  PGM=SORT                         
+//SORTIN    DD    DSN=CAPGC38.TEJA.SORTPS1,DISP=OLD
+//SORTOUT   DD    DSN=CAPGC38.TEJA.SORTPS2,DISP=OLD
+//SYSOUT    DD    SYSOUT=*                         
+//SYSIN     DD *                                   
+  OMIT COND=(5,7,CH,EQ,C’RAHUL’)                                  
+   SORT FIELDS=(1,3,CH,A)                       
+
+
+
+                                    
+                                     
+
+                      
+                                                                           
